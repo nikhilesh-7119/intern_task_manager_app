@@ -36,42 +36,77 @@ class TaskTile extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Stack(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 40.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Multi-line, full title
-                      Text(
-                        task.title,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              decoration: task.isCompleted
-                                  ? TextDecoration.lineThrough
-                                  : null,
-                            ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Deadline: $deadlineStr',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
+                Text(
+                  task.title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    decoration: task.isCompleted
+                        ? TextDecoration.lineThrough
+                        : null,
                   ),
                 ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.edit, size: 20),
-                    onPressed: onEdit,
-                    tooltip: 'Edit',
-                  ),
+                const SizedBox(height: 6),
+                Text(
+                  'Deadline: $deadlineStr',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 48,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, size: 20),
+                  onPressed: onEdit,
+                  tooltip: 'Edit',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                // const SizedBox(height: 4),
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete,
+                    size: 20,
+                    color: Colors.redAccent,
+                  ),
+                  tooltip: 'Delete',
+                  onPressed: () async {
+                    final ok = await _confirmDelete(context);
+                    if (ok == true) {
+                      await db.deleteTask(task.id);
+                    }
+                  },
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _confirmDelete(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete task?'),
+        content: const Text('This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete'),
           ),
         ],
       ),
